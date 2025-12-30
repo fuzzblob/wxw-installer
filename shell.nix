@@ -3,6 +3,8 @@
 pkgs.mkShell {
   buildInputs = [
     pkgs.git
+    pkgs.clang
+    pkgs.clang-tools
     pkgs.gcc
     pkgs.cmake
     pkgs.ninja

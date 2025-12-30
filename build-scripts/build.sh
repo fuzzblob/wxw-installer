@@ -18,8 +18,10 @@ CMake build script
 
 Options:
   -h --help           Show this screen.
-  -m --make           generate Unix Makefiles (default)
-  -n --ninja          generate Ninja project configuration
+  -m --make           Generate Unix Makefiles (default)
+  -n --ninja          Generate Ninja project configuration
+     --gcc            Compile with GNU Compiler Collection
+     --clang          Compile with Clang Compiler
   -g --generate-only  Only generate and don't invoke the build step
   -c --clean          Clean build directory before generating
                       (must be passed after generator argument)
@@ -30,16 +32,36 @@ HEREDOC
 _generate() {
   echo "CMake generating Release build:"
   # invoke CMake
-  cmake -G "$GENERATOR" -DCMAKE_BUILD_TYPE=Release -S ../.. -B .
+
+  case $3 in
+    clang++)
+      echo "invoking CMake for Clang"
+      MAKE_RULES_OVERRIDE="$(dirname $0)/ClangOverrides.txt"
+      #-D_CMAKE_TOOLCHAIN_PREFIX=llvm-
+      TOOLCHAIN_FILE="$(dirname $0)/clang.cmake"
+      ;;
+    *)
+      echo "Unknown COMPILER '$3'"
+      ;&
+    g++)
+      echo "invoking CMake for GCC"
+      TOOLCHAIN_FILE="$(dirname $0)/gcc.cmake"
+      #cmake -G "$GENERATOR" -DCMAKE_BUILD_TYPE=Release -S ../.. -B .
+      ;;
+  esac
+
+  cmake -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE" -DCMAKE_USER_MAKE_RULES_OVERRIDE="$MAKE_RULES_OVERRIDE" -G "$GENERATOR" -DCMAKE_BUILD_TYPE=Release -S ../.. -B .
+
   # check whether to invoke build tool
   if [ "$1" != "true" ]; then
     echo "compiling Release build of wxWidgets Installer:"
     # parse arguments
     case $2 in
       "Ninja")
-        ninja -d stats
+        ninja -j $(nproc) -d stats
         ;;
       "Unix Makefiles")
+        MAKEFLAGS=-j$(nproc)
         make
         ;;
       *)
@@ -75,30 +97,38 @@ _main() {
             echo "the build type must be passed before the \"-c\" or \"--clean\" option."
             echo "skipped cleaning the build directory."
           fi
-          shift # past argument=value
+          shift
           ;;
         -m|--make)
           GENERATOR="Unix Makefiles"
           BUILD_TYPE="project_make"
           BUILD_DIR="$(dirname $0)/$BUILD_TYPE"
-          shift # past argument=value
+          shift
           ;;
         -n|--ninja)
           GENERATOR="Ninja"
           BUILD_TYPE="project_ninja"
           BUILD_DIR="$(dirname $0)/$BUILD_TYPE"
-          shift # past argument=value
+          shift
           ;;
         -g|--generate-only)
           GENERATE_ONLY="true"
-          shift # past argument=value
+          shift
           ;;
         -h|--help)
           _print_help
           return 0
           ;;
+        --gcc)
+          COMPILER="g++"
+          shift
+          ;;
+        --clang)
+          COMPILER="clang++"
+          shift
+          ;;
         -*|--*)
-          echo "Unknown option $i"
+          echo "error: Unknown option $i"
           exit 1
           ;;
         *)
@@ -122,7 +152,7 @@ _main() {
       return 1
     fi
     cd "$BUILD_DIR"
-    _generate "$GENERATE_ONLY" "$GENERATOR"
+    _generate "$GENERATE_ONLY" "$GENERATOR" "$COMPILER"
     cd ..
     return 0
   fi
