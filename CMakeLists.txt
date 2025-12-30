@@ -25,17 +25,20 @@ if(wxWidgets_FOUND)
         src/*.cpp
         src/*.c
     )
-    #target_include_directories(${PROJECT_NAME}
+    # include header files
     include_directories(
         src
     )
-
-    # Add your executable target
+    # Add source files to executable
     add_executable(${PROJECT_NAME} ${SRCS})
-
     # Link wxWidgets libraries to your target
     target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES})
-
     # Set any additional compiler flags
     target_compile_options(${PROJECT_NAME} PRIVATE ${wxWidgets_CXX_FLAGS})
+    target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+    # Set output directories for binaries
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/bin/"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin/"
+    )
 endif()

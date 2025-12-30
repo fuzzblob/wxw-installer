@@ -1,3 +1,4 @@
 build-scripts/build_make/
 build-scripts/project_ninja/
 build-scripts/project_make/
+bin/
