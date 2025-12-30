@@ -1,4 +1,5 @@
 #include "MyApp.h"
+#include "MyFrame.h"
 
 namespace wxInstaller
 {

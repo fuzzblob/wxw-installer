@@ -31,7 +31,7 @@ if(wxWidgets_FOUND)
     )
 
     # Add your executable target
-    add_executable(${PROJECT_NAME} src/MyApp.cpp)
+    add_executable(${PROJECT_NAME} ${SRCS})
 
     # Link wxWidgets libraries to your target
     target_link_libraries(${PROJECT_NAME} ${wxWidgets_LIBRARIES})

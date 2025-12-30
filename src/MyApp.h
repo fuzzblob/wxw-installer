@@ -11,12 +11,4 @@ namespace wxInstaller
 
         bool OnInit();
     };
-
-    class MyFrame : public wxFrame {
-    public:
-        MyFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) {
-            // Initialize components here
-
-        };
-    };
 };
