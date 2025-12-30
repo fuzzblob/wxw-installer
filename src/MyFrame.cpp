@@ -9,21 +9,27 @@ namespace wxInstaller
         // Create a panel to hold the widgets
         wxPanel* panel = new wxPanel(this);
 
-        // Create a button
-        wxButton* button = new wxButton(panel, wxID_ANY, "Click Me!", wxDefaultPosition, wxSize(100, 30));
+        // Vertical layout for the contents
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+        // horizontal layout to hold the buttons
+        auto* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 
-        // Create a sizer to manage the layout
-        wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-        sizer->Add(button, 0, wxALIGN_CENTER | wxALL, 10);
+        // create the Next and Cancel buttons
+        auto* buttonNext = new wxButton(panel, wxID_ANY, "Next");
+        buttonSizer->Add(buttonNext, 0, wxALL, 5);
+        auto* buttonCancel = new wxButton(panel, wxID_ANY, "Cancel");
+        buttonSizer->Add(buttonCancel, 0, wxALL, 5);
 
-        // Set the sizer for the panel
-        panel->SetSizer(sizer);
+        // add buttons to main vertical layout
+        mainSizer->Add(buttonSizer, 0, wxALIGN_CENTER | wxALL, 10);
+        // apply main layout
+        panel->SetSizer(mainSizer);
 
         // Set the size of the frame
         this->SetSize(300, 200);
 
         // Bind the button click event
-        button->Bind(wxEVT_BUTTON, &MyFrame::OnButtonClick, this);
+        buttonNext->Bind(wxEVT_BUTTON, &MyFrame::OnButtonClick, this);
     };
 
     void MyFrame::OnButtonClick(wxCommandEvent& event) {
