@@ -1,23 +1,16 @@
-#include <wx/wx.h>
+#include "MyApp.h"
 
-class MyFrame : public wxFrame {
-public:
-    MyFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) {
-        // Initialize components here
-    }
-};
+namespace wxInstaller
+{
+    MyApp::MyApp() {};
+    MyApp::~MyApp() {};
 
-class MyApp : public wxApp {
-public:
-    MyApp() {}
-    ~MyApp() {}
-
-    bool OnInit() {
+    bool MyApp::OnInit() {
         // Create the main window
         MyFrame* frame = new MyFrame("My First wxWidgets App");
         frame->Show(true);
         return true;
-    }
+    };
 };
 
-IMPLEMENT_APP(MyApp)
+IMPLEMENT_APP(wxInstaller::MyApp)
