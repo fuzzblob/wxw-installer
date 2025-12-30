@@ -38,11 +38,9 @@ _generate() {
     case $2 in
       "Ninja")
         ninja -d stats
-        return 0
         ;;
       "Unix Makefiles")
         make
-        return 0
         ;;
       *)
         echo "Unknown GENERATOR $2"
@@ -50,6 +48,8 @@ _generate() {
         ;;
     esac
   fi
+  echo ""
+  echo "built sucessfully!"
   return 0
 }
 
