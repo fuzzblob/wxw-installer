@@ -7,5 +7,6 @@ namespace wxInstaller
     class MyFrame : public wxFrame {
     public:
         MyFrame(const wxString& title);
+        void OnButtonClick(wxCommandEvent& event);
     };
 };

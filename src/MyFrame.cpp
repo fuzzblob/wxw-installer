@@ -21,5 +21,12 @@ namespace wxInstaller
 
         // Set the size of the frame
         this->SetSize(300, 200);
+
+        // Bind the button click event
+        button->Bind(wxEVT_BUTTON, &MyFrame::OnButtonClick, this);
     };
+
+    void MyFrame::OnButtonClick(wxCommandEvent& event) {
+        wxMessageBox("Button clicked!", "Info", wxOK | wxICON_INFORMATION);
+    }
 };
