@@ -8,5 +8,8 @@ namespace wxInstaller
     public:
         MyFrame(const wxString& title);
         void OnButtonClick(wxCommandEvent& event);
+    private:
+        wxBoxSizer* WelcomeTextSizer(wxPanel* panel);
+        wxBoxSizer* ButtonSizer(wxPanel* panel);
     };
 };
