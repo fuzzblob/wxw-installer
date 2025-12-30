@@ -1,7 +1,5 @@
 #!/bin/sh
 
-#!/usr/bin/env bash
-
 set -e
 
 # keep track of the last executed command
@@ -16,36 +14,42 @@ trap 'echo "\"${last_command}\" command failed with exit code $?."' EXIT
 _print_help() {
   cat <<HEREDOC
 
-build script
-
-Run without arguments to build linux make files.
-
-Usage:
-  ${_ME} -h | --help
+CMake build script
 
 Options:
-  -h --help       Show this screen.
-  -c --clean      Clean build directory befor generating
-  -g --generate   Only generate and don't compile / build the project
+  -h --help           Show this screen.
+  -m --make           generate Unix Makefiles (default)
+  -n --ninja          generate Ninja project configuration
+  -g --generate-only  Only generate and don't invoke the build step
+  -c --clean          Clean build directory before generating
+                      (must be passed after generator argument)
 
 HEREDOC
 }
 
-_setup_folder() {
-  echo "setting up build dir: $BUILD_DIR"
-  mkdir "$1" -p
-  return 0
-}
-
 _generate() {
   echo "CMake generating Release build:"
-  cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -S ../.. -B .
-  return 0
-}
-
-_build() {
-  echo "compiling Release build of wxWidgets Installer:"
-  make
+  # invoke CMake
+  cmake -G "$GENERATOR" -DCMAKE_BUILD_TYPE=Release -S ../.. -B .
+  # check whether to invoke build tool
+  if [ "$1" != "true" ]; then
+    echo "compiling Release build of wxWidgets Installer:"
+    # parse arguments
+    case $2 in
+      "Ninja")
+        ninja -d stats
+        return 0
+        ;;
+      "Unix Makefiles")
+        make
+        return 0
+        ;;
+      *)
+        echo "Unknown GENERATOR $2"
+        return 1
+        ;;
+    esac
+  fi
   return 0
 }
 
@@ -58,21 +62,67 @@ _main() {
     _print_help
     return 0
   else
-    SCRIPT_DIR=$(dirname "$0")
-    BUILD_TYPE="build_make"
-    BUILD_DIR="$SCRIPT_DIR/$BUILD_TYPE"
-    if [[ "${1:-}" =~ ^-c|--clean$  ]]; then
-      if [[ -d "$BUILD_DIR" ]]; then
-        echo "removing existing build dir: $BUILD_DIR"
-        rm -rf "$BUILD_DIR"
-      fi
+    # parse arguments
+    for i in "$@"; do
+      case $i in
+        -c|--clean)
+          if [ -v BUILD_DIR ]; then
+            if [[ -d "$BUILD_DIR" ]]; then
+              echo "removing existing build dir: $BUILD_DIR"
+              rm -rf "$BUILD_DIR"
+            fi
+          else
+            echo "the build type must be passed before the \"-c\" or \"--clean\" option."
+            echo "skipped cleaning the build directory."
+          fi
+          shift # past argument=value
+          ;;
+        -m|--make)
+          GENERATOR="Unix Makefiles"
+          BUILD_TYPE="project_make"
+          BUILD_DIR="$(dirname $0)/$BUILD_TYPE"
+          shift # past argument=value
+          ;;
+        -n|--ninja)
+          GENERATOR="Ninja"
+          BUILD_TYPE="project_ninja"
+          BUILD_DIR="$(dirname $0)/$BUILD_TYPE"
+          shift # past argument=value
+          ;;
+        -g|--generate-only)
+          GENERATE_ONLY="true"
+          shift # past argument=value
+          ;;
+        -h|--help)
+          _print_help
+          return 0
+          ;;
+        -*|--*)
+          echo "Unknown option $i"
+          exit 1
+          ;;
+        *)
+          ;;
+      esac
+    done
+    # check parameters
+    if [ ! -v GENERATOR ]; then
+      echo "no GENERATOR set. setting default options..."
+      # set defaults
+      GENERATOR="Unix Makefiles"
+      BUILD_TYPE="project_make"
+      BUILD_DIR="$(dirname $0)/$BUILD_TYPE"
     fi
-    _setup_folder "$BUILD_DIR"
+
+    if [ -v BUILD_DIR ]; then
+      echo "setting up build dir: $BUILD_DIR"
+      mkdir "$BUILD_DIR" -p
+    else
+      echo "the build directory is not specified. aborting..."
+      return 1
+    fi
     cd "$BUILD_DIR"
-    _generate
-    if [[ "${1:-}" =~ ^-g|--generate$  ]]; then
-      _build
-    fi
+    _generate "$GENERATE_ONLY" "$GENERATOR"
     cd ..
     return 0
   fi
