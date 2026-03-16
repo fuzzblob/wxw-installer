@@ -9,3 +9,7 @@ attempting a new way of installing [Ultraschall](https://ultraschall.fm/) podcas
 - unifying the code for Windows, Mac and Linux install experiences
 - making the Utraschall install process more accessible to blind users
 - making development of features such as support for portable installs easier to manage
+
+# building
+
+The `cmake/CPM.cmake` file should handle the **wxWidgets** dependency if not already installed via the system (install dev packages or use nix shell / flake).

@@ -2,3 +2,5 @@ build-scripts/build_make/
 build-scripts/project_ninja/
 build-scripts/project_make/
 bin/
+build-scripts/build_*/
+cmake/.cpm-cache/*

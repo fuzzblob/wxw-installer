@@ -38,19 +38,19 @@ _generate() {
       echo "invoking CMake for Clang"
       MAKE_RULES_OVERRIDE="$(dirname $0)/ClangOverrides.txt"
       #-D_CMAKE_TOOLCHAIN_PREFIX=llvm-
-      TOOLCHAIN_FILE="$(dirname $0)/clang.cmake"
+      TOOLCHAIN_FILE="$(dirname $0)/../cmake/clang.cmake"
       ;;
     *)
       echo "Unknown COMPILER '$3'"
       ;&
     g++)
       echo "invoking CMake for GCC"
-      TOOLCHAIN_FILE="$(dirname $0)/gcc.cmake"
+      TOOLCHAIN_FILE="$(dirname $0)/../cmake/gcc.cmake"
       #cmake -G "$GENERATOR" -DCMAKE_BUILD_TYPE=Release -S ../.. -B .
       ;;
   esac
 
-  cmake -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE" -DCMAKE_USER_MAKE_RULES_OVERRIDE="$MAKE_RULES_OVERRIDE" -G "$GENERATOR" -DCMAKE_BUILD_TYPE=Release -S ../.. -B .
+  cmake -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_USER_MAKE_RULES_OVERRIDE="$MAKE_RULES_OVERRIDE" -G "$GENERATOR" -DCMAKE_BUILD_TYPE=Release -S ../.. -B .
 
   # check whether to invoke build tool
   if [ "$1" != "true" ]; then
