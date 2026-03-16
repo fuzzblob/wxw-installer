@@ -4,3 +4,4 @@ build-scripts/project_make/
 bin/
 build-scripts/build_*/
 cmake/.cpm-cache/*
+build-scripts/project_*/
