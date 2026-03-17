@@ -5,8 +5,9 @@ rem #
 rem #    (c) 2026 - Maris Tammik
 rem #
 rem #################################################################
+
 echo.
-rem ### set defaults
+rem ###### set defaults #############################################
 set BUILD="TRUE"
 set CLEAR="FALSE"
 rem ### reset generator settings
@@ -15,10 +16,9 @@ set BUILD_DIR=
 rem ### jump to parsing
 goto :parse
 
-rem #################################################################
-
-rem ### help for instructing the user
+rem ###### Help Section #############################################
 :show_help
+rem ### help for instructing the user
 echo.
 echo ===== Build Script =============================================
 echo.
@@ -42,9 +42,7 @@ echo.
 echo ================================================================
 exit /b 0
 
-rem #################################################################
-
-rem ### parse flags
+rem ###### Argument Parsing #########################################
 :parse
 rem ### print help and exit
 if /I "%~1"=="--help"		goto :show_help
@@ -70,7 +68,7 @@ if /I "%~1"=="-g"			goto :set_generate
 if /I "%~1"=="--no-build"	goto :set_generate
 if /I "%~1"=="--generate-only" (
 	:set_generate
-	echo "generate-only" mode enabled / no building of binary
+	echo ----- "generate-only" mode enabled / no building of binary
 	set BUILD="FALSE"
     shift
     goto :parse
@@ -80,7 +78,7 @@ if /I "%~1"=="-c"			goto :clean
 if /I "%~1"=="--clear"		goto :clean
 if /I "%~1"=="--clean" (
 	:clean
-	echo "clean" mode enabled
+	echo ----- "clean" mode enabled
 	set CLEAR="TRUE"
     shift
     goto :parse
@@ -102,8 +100,8 @@ if  /I "%~1"=="" (
 ) else (
 	rem ### error parsing unknown argument
 	echo.
-	echo Build script error!
-	echo Can't handle unknown option: "%~1"
+	echo ----- Build script error!
+	echo ----- Can't handle unknown option: "%~1"
 	rem ### exit out
 	exit /b 1
 )
@@ -116,7 +114,7 @@ rem %~1 = generator name
 set "GENERATOR=%~1"
 rem %~2 = build directory
 set "BUILD_DIR=%~2"
-echo Set "GENERATOR" to "%GENERATOR%"
+echo ----- Set "GENERATOR" to "%GENERATOR%"
 exit /b 0
 
 rem #################################################################
@@ -126,28 +124,19 @@ echo.
 echo ===== Running Build Script... ==================================
 echo.
 rem ### clean or create a build folder
-if /I %CLEAR%=="TRUE" (
-	echo clearing build and bin diretories
-	if exist "%BUILD_DIR%" rmdir /S /Q "%BUILD_DIR%"
-	if exist bin rmdir /S /Q ../bin
-)
-mkdir "%BUILD_DIR%"
-
-rem ### CMake configuration
-set CM="C:\Program Files\CMake\bin\cmake.exe"
+call :setup_dir
 rem ### enter build dir
 pushd "%BUILD_DIR%"
-echo entering "%BUILD_DIR%"
-echo beginning project generation
-echo.
 rem ### call generation step
-if /I "%GENERATOR%"=="Ninja" (
-    call :generate_ninja
-) else if "%GENERATOR%"=="MSVC" (
-    call :generate_msvc
+call :generate_step
+rem ### call build step
+if %ERRORLEVEL% equ 0 (
+	if %BUILD%=="TRUE" (
+		call :build_step
+	)
 ) else (
-	echo Unknown generator: "%GENERATOR%"
-	exit /b 1
+	echo ----- CMake task reported a failure. Exit code was: %ERRORLEVEL%
+	echo ----- Skipping build step
 )
 rem ### exit build dir
 popd
@@ -155,38 +144,79 @@ rem ### printing final message
 echo.
 echo ===== Exiting Build Script =====================================
 echo.
-exit /b 0
+exit /b %ERRORLEVEL%
 
-rem #################################################################
+rem ###### build dir setup ##########################################
 
-:generate_ninja
-rem ### call cmake
-%CM% -G "Ninja" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Wdev -S ../../
-echo.
-echo CMake completed generating project
-if %BUILD%=="TRUE" (
-	rem ### execute build tool
-	echo beginning build:
-	echo.
-	ninja.exe -d stats
+:setup_dir
+rem ### clean build and bin folder
+if /I %CLEAR%=="TRUE" (
+	echo ----- clearing build and bin diretories
+	if exist "%BUILD_DIR%" rmdir /S /Q "%BUILD_DIR%"
+	if exist ../bin rmdir /S /Q ../bin
+)
+if not exist "%BUILD_DIR%" (
+	mkdir "%BUILD_DIR%"
 )
 exit /b 0
-:generate_msvc
-rem ### set VS tool chain path
-set VS150COMNTOOLS = "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\"
-rem ### call cmake
-%CM% -G "Visual Studio 17 2022" -Wdev -S ../../
+
+rem ###### CMake project generation #################################
+
+:generate_step
+rem ### CMake configuration
+set CM="C:\Program Files\CMake\bin\cmake.exe"
+echo ----- Beginning CMake project generation with "%GENERATOR%"
 echo.
-echo CMake completed generating project
-if %BUILD%=="TRUE" (
+if /I "%GENERATOR%"=="Ninja" (	
+	rem ### call cmake
+	%CM% -G "Ninja" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -Wdev -S ../../
+) else if "%GENERATOR%"=="MSVC" (
+	rem ### set VS tool chain path
+	set VS150COMNTOOLS = "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\"
+	rem ### call cmake
+	%CM% -G "Visual Studio 17 2022" -Wdev -S ../../
+	echo.
+	echo ----- CMake completed generating project
+) else (
+	echo ----- Unknown generator: "%GENERATOR%"
+	exit /b 1
+)
+rem ### check CMake status
+echo.
+if %ERRORLEVEL% equ 0 (
+	echo ----- CMake completed generating project
+	exit /b 0
+)
+echo ----- CMake task reported a failure. Exit code was: %ERRORLEVEL%
+exit /b %ERRORLEVEL%
+
+rem ###### executing build / toolchain ##############################
+
+:build_step
+rem ### execute build tool
+echo ----- Beginning build phase
+echo.
+if /I "%GENERATOR%"=="Ninja" (
+	ninja.exe -d stats
+) else if "%GENERATOR%"=="MSVC" (
 	rem ### find the solution file inside %BUILD_DIR%
 	for %%S in ("%BUILD_DIR%\*.sln") do set "SLN=%%~nxS"
 	rem ### build the solution
-	echo beginning build:
+	echo ----- beginning build:
 	echo.
 	MSBuild.exe "%SLN%" -p:Configuration=Debug
+) else (
+	echo ----- Unknown generator: "%GENERATOR%"
+	exit /b 1
+)
+rem ### check toolchain status
+echo.
+if %ERRORLEVEL% equ 0 (
+	echo ----- Build completed sucessfully
 	exit /b 0
 )
-exit /b 0
+echo ----- Build task reported a failure. Exit code was: %ERRORLEVEL%
+exit /b %ERRORLEVEL%
 
 rem #################################################################
+exit /b 0
