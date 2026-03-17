@@ -5,6 +5,8 @@ set(PROJECT_NAME "wxInstaller" CACHE INTERNAL "Name of ${PROJECT_NAME} project")
 set(PROJECT_VERSION 0.0.0 CACHE INTERNAL "Version of ${PROJECT_NAME} project")
 project(${PROJECT_NAME} VERSION ${PROJECT_VERSION})
 
+message(STATUS "Generating '${PROJECT_NAME}' (version ${PROJECT_VERSION}) with CMake Generator '${CMAKE_GENERATOR}'")
+
 #
 # setup code
 #
@@ -32,6 +34,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(wxBUILD_SHARED OFF)
 
+message(STATUS "Looking for wxWidgets dependency...")
 # Find wxWidgets package
 find_package(wxWidgets OPTIONAL COMPONENTS core base)
 # If wxWidgets is found, set the required variables
