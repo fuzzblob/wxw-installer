@@ -24,6 +24,8 @@ include_directories(
 )
 # Add source files to executable
 add_executable(${PROJECT_NAME} WIN32 ${SRCS})
+# Add header files to target
+target_sources(${PROJECT_NAME} PRIVATE ${HDRS})
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
