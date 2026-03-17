@@ -98,7 +98,7 @@ jobs:
 
     - name: Install Linux Dependencies
       shell: bash
-      run: sudo apt install libwxgtk3.3-dev libwxgtk3.3-dbg
+      run: sudo apt install libwxgtk-dev libwxgtk-dbg
       if: matrix.os == 'ubuntu-latest'
       
     - name: Install MacOS Dependencies

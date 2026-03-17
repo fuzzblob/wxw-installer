@@ -49,12 +49,12 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
     - name: Run CMake to setup project
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      # run: cmake -G "Visual Studio 17 2022" -Wdev -S . -DCPM_SOURCE_CACHE=${{github.workspace}}/build/_deps/
-      run: ./build-scripts/build.bat --msvc --generate-only
+      run: cmake -G "Visual Studio 17 2022" -Wdev -S . -DCPM_SOURCE_CACHE=${{github.workspace}}/build/_deps/
+      # run: ./build-scripts/build.bat --msvc --generate-only
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       #run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
-      # run: cmake --build .
-      run: ./build-scripts/build.bat --msvc
+      run: cmake --build .
+      # run: ./build-scripts/build.bat --msvc
