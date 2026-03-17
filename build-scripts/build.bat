@@ -7,6 +7,8 @@ rem #################################################################
 rem set defaults
 set BUILD="TRUE"
 set CLEAR="FALSE"
+set GENERATOR=
+set BUILD_DIR=
 goto :parse
 
 rem #################################################################
@@ -82,16 +84,21 @@ if /I "%~1"=="--clean" (
 )
 rem ### empty argument
 if  /I "%~1"=="" (
+	shift
 	if not defined GENERATOR (
+		:set_default
 		rem ### define default generator
 		call :set_generator Ninja project_ninja
 		echo Had to set "GENERATOR" to default
+	) else if "%GENERATOR%"=="" (
+		goto :set_default
 	)
-	goto :run
+) else (
+	rem ### error exit out
+	echo Can't handle unknown option: "%~1"
+	exit /b 1
 )
-rem ### error exit out
-echo Can't handle unknown option: "%~1"
-exit /b 1
+goto :run
 
 rem ### setting CMake generator
 :set_generator
