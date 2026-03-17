@@ -1,14 +1,18 @@
 @echo off
 
-echo Beginning build script...
-
 rem #################################################################
-
-rem set defaults
+rem #
+rem #    (c) 2026 - Maris Tammik
+rem #
+rem #################################################################
+echo.
+rem ### set defaults
 set BUILD="TRUE"
 set CLEAR="FALSE"
+rem ### reset generator settings
 set GENERATOR=
 set BUILD_DIR=
+rem ### jump to parsing
 goto :parse
 
 rem #################################################################
@@ -33,10 +37,9 @@ echo.
 echo Examples:
 echo    build.bat                   uses Ninja, builds immediately
 echo    build.bat --msvc            generate VS Solution
-echo    build.bat --generate-only   only run CMake, no build
+echo    build.bat --generate-only   only run CMake (Ninja), no build
 echo.
 echo ================================================================
-echo.
 exit /b 0
 
 rem #################################################################
@@ -89,15 +92,22 @@ if  /I "%~1"=="" (
 		:set_default
 		rem ### define default generator
 		call :set_generator Ninja project_ninja
-		echo Had to set "GENERATOR" to default
 	) else if "%GENERATOR%"=="" (
+		rem ### handle defined but empty generator
 		goto :set_default
+	) else (
+		rem ### empty argument assumed to be the last
+		goto :run
 	)
 ) else (
-	rem ### error exit out
+	rem ### error parsing unknown argument
+	echo.
+	echo Build script error!
 	echo Can't handle unknown option: "%~1"
+	rem ### exit out
 	exit /b 1
 )
+rem ### all possible arguments handeled
 goto :run
 
 rem ### setting CMake generator
@@ -112,6 +122,9 @@ exit /b 0
 rem #################################################################
 
 :run
+echo.
+echo ===== Running Build Script... ==================================
+echo.
 rem ### clean or create a build folder
 if /I %CLEAR%=="TRUE" (
 	echo clearing build and bin diretories
@@ -128,7 +141,7 @@ echo entering "%BUILD_DIR%"
 echo beginning project generation
 echo.
 rem ### call generation step
-if "%GENERATOR%"=="Ninja" (
+if /I "%GENERATOR%"=="Ninja" (
     call :generate_ninja
 ) else if "%GENERATOR%"=="MSVC" (
     call :generate_msvc
@@ -138,6 +151,10 @@ if "%GENERATOR%"=="Ninja" (
 )
 rem ### exit build dir
 popd
+rem ### printing final message
+echo.
+echo ===== Exiting Build Script =====================================
+echo.
 exit /b 0
 
 rem #################################################################
